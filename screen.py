@@ -1,10 +1,9 @@
 import pygame
 import random
-import time
 
 pygame.init()
-dis_width = 800
-dis_heigth = 600
+dis_width = 600
+dis_heigth = 400
 dis = pygame.display.set_mode((dis_width,dis_heigth))
 pygame.display.set_caption('Snake Game')
 
@@ -13,21 +12,26 @@ azul = (0,0,255)
 branco = (255,255,255)
 preto = (0,0,0)
 vermelho = (255,0,0)
-
-
-
-blocos = 10
-
-
+amarelo = (255, 255, 102)
 
 tempo = pygame.time.Clock()
-velocidade = 20
+velocidade = 15
+blocos = 10
 
-font_style = pygame.font.SysFont(None, 30)
+font_style = pygame.font.SysFont("bahnschrift", 20)
+score_font = pygame.font.SysFont("Ariel", 35)
+
+def score_jogo(score):
+    valor = score_font.render("Score: " + str(score), True, amarelo)
+    dis.blit(valor, [0, 0])
+
+def cobrinha(blocos, lista):
+    for x in lista:
+        pygame.draw.rect(dis, rosa, [x[0], x[1], blocos, blocos])
 
 def mensagem(msg, cor):
     mensg = font_style.render(msg, True, cor)
-    dis.blit(mensg, [dis_width/3, dis_heigth/3])
+    dis.blit(mensg, [dis_width/9, dis_heigth/3])
 
 def game_loop():
     game_over = False
@@ -39,13 +43,17 @@ def game_loop():
     x1_mover = 0
     y1_mover = 0
 
-    comida_x = round(random.randrange(0, dis_width - blocos) / 10.0) * 10.
-    comida_y  = round(random.randrange(0, dis_width - blocos) / 10.0) * 10.
+
+    lista_cobra = []
+    comprimento_cobra = 1
+    comida_x = round(random.randrange(0, dis_width - blocos) / 10.0) * 10.0
+    comida_y = round(random.randrange(0, dis_heigth - blocos) / 10.0) * 10.0
 
     while not game_over:
         while game_close == True:
-            dis.fill(branco)
+            dis.fill(preto)
             mensagem("Você perdeu! Aperte Q - Quit ou C - Jogar novamente", vermelho)
+            score_jogo((comprimento_cobra-1))
             pygame.display.update()
 
             for evento in pygame.event.get():
@@ -78,11 +86,24 @@ def game_loop():
         y1 += y1_mover
         dis.fill(preto)
         pygame.draw.rect(dis, azul, [comida_x, comida_y, blocos, blocos])
-        pygame.draw.rect(dis, rosa, [x1, y1, blocos, blocos])
+        cabeca_cobra = []
+        cabeca_cobra.append(x1)
+        cabeca_cobra.append(y1)
+        lista_cobra.append(cabeca_cobra)
+        if len(lista_cobra) > comprimento_cobra:
+            del lista_cobra[0]
+
+        for x in lista_cobra[:-1]:
+            if x == cabeca_cobra:
+                game_close = True
+        cobrinha(blocos, lista_cobra)
+        score_jogo(comprimento_cobra - 1)
         pygame.display.update()
 
         if x1 == comida_x and y1 == comida_y:
-            print("Que gostoso!")
+            comida_x = round(random.randrange(0, dis_width - blocos) / 10) * 10.0
+            comida_y = round(random.randrange(0, dis_heigth - blocos) / 10) * 10.0
+            comprimento_cobra += 1
         tempo.tick(velocidade)
 
 
